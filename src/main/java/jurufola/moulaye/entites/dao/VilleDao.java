@@ -3,25 +3,25 @@ package jurufola.moulaye.entites.dao;
 import jurufola.moulaye.entites.Departement;
 import jurufola.moulaye.entites.Region;
 import jurufola.moulaye.entites.Ville;
-import jurufola.moulaye.utils.ConfigDatabase;
-import jurufola.moulaye.utils.Database;
-import org.mariadb.jdbc.Driver;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO Ville
+ * @author juruf_000
+ */
 public class VilleDao {
+    /**
+     * Extrait toutes les villes de la BDD
+     * @param connection La connexion
+     * @return liste de villes
+     */
     public List<Ville> extraire(Connection connection){
-        // Connection bdd
-        //Connection connection = null;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         List<Ville> villes = new ArrayList<>();
         try {
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
             preparedStatement = connection.prepareStatement("select * from ville");
             resultSet = preparedStatement.executeQuery();
 
@@ -48,9 +48,7 @@ public class VilleDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
+
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
@@ -59,16 +57,18 @@ public class VilleDao {
         return villes;
     }
 
+    /**
+     * Extrait une liste de villes appartenant au departement d'id fourni en paramètre
+     * @param idDepartement L'identifiant du département
+     * @param connection La connexion
+     * @return liste de villes
+     */
     public List<Ville> extraireParIdDepartement(int idDepartement, Connection connection){
-        // Connection bdd
-        //Connection connection = null;
+
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         List<Ville> villes = new ArrayList<>();
         try {
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
             preparedStatement = connection.prepareStatement("select * from ville where id_departement = ?");
             preparedStatement.setInt(1, idDepartement);
             resultSet = preparedStatement.executeQuery();
@@ -95,9 +95,7 @@ public class VilleDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
+
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
@@ -106,16 +104,18 @@ public class VilleDao {
         return villes;
     }
 
+    /**
+     * Insert une ville dans la BDD à partir de l'objet Ville
+     * @param ville La ville
+     * @param connection La connexion
+     */
     public void insert(Ville ville, Connection connection){
         //On verifie d'abord la presence de la ville dans la BDD avant toute insertion
         if (verifVillePresent(ville, connection)==false){
-            //Connection connection = null;
+
             PreparedStatement preparedStatement = null;
-            //Connexion BDD
             try{
-                //DriverManager.registerDriver(new Driver());
-                //Database db = ConfigDatabase.extractConfig();
-                //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
+
                 int id = ville.getId();
                 int code = ville.getCodeCommune();
                 String nom = ville.getNom();
@@ -144,9 +144,6 @@ public class VilleDao {
                     if (preparedStatement != null) {
                         preparedStatement.close();
                     }
-                    /*if (connection != null) {
-                        connection.close();
-                    }*/
                 } catch (SQLException e) {
                     System.err.println("Problème de fermeture des ressources :" + e.getMessage());
                 }
@@ -156,6 +153,15 @@ public class VilleDao {
         }
     }
 
+    /**
+     * Insert une ville à partir des paramètres ci-dessous
+     * @param codeCommune Le code de la commune
+     * @param nom Le nom de la commune
+     * @param populationTotale La population totale de la commune
+     * @param idDepartement L'identifiant du département associé
+     * @param idRegion L'identifiant de la région associée
+     * @param connection La connexion
+     */
     public void insert(int codeCommune, String nom, int populationTotale, int idDepartement, int idRegion, Connection connection){
         //On verifie d'abord la presence de la ville dans la BDD avant toute insertion
         if (verifVillePresent(codeCommune, nom, populationTotale, idDepartement, idRegion, connection) == false ){
@@ -187,9 +193,7 @@ public class VilleDao {
                     if (preparedStatement != null) {
                         preparedStatement.close();
                     }
-                    /*if (connection != null) {
-                        connection.close();
-                    }*/
+
                 } catch (SQLException e) {
                     System.err.println("Problème de fermeture des ressources :" + e.getMessage());
                 }
@@ -197,22 +201,30 @@ public class VilleDao {
         } else {
             System.out.println(" La ville " + nom + " est deja presente dans la base");
         }
-
-
     }
 
+    /**
+     * Modififie
+     * @param ancienCodeCommune L'ancien code de la commune
+     * @param ancienNom L'ancien nom de la commune
+     * @param ancienPopulationTotale L'ancienne population de la commune
+     * @param ancienIdDepartement L'identifiant de l'ancien département
+     * @param ancienIdRegion L'identifiant de l'ancienne région
+     * @param nouveauCodeCommune Le nouveau code de la commune
+     * @param nouveauNom Le nouveau nom de la commune
+     * @param nouveauPopulationTotale La nouvelle population de la commune
+     * @param nouveauIdDepartement L'identifiant du nouveau département
+     * @param nouveauIdRegion L'identifiant de la nouvelle région
+     * @param connection La connexion
+     * @return nbre de lignes modifiées
+     */
     public int update(int ancienCodeCommune, String ancienNom, int ancienPopulationTotale, int ancienIdDepartement, int ancienIdRegion, int nouveauCodeCommune, String nouveauNom, int nouveauPopulationTotale, int nouveauIdDepartement, int nouveauIdRegion, Connection connection){
-        //On verifie d'abord la presence de la ville dans la BDD avant toute insertion
+        //On verifie d'abord la nouvelle ville n'est pas présente en base avant de porter les modifications
         int nbLignes =0;
         if (verifVillePresent(nouveauCodeCommune, nouveauNom, nouveauPopulationTotale, nouveauIdDepartement, nouveauIdRegion, connection) == false ){
-            //Connection connection = null;
-            PreparedStatement preparedStatement = null;
-            //Connexion BDD
-            try{
-                //DriverManager.registerDriver(new Driver());
-                //Database db = ConfigDatabase.extractConfig();
-                //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
 
+            PreparedStatement preparedStatement = null;
+            try{
                 preparedStatement = connection.prepareStatement("update ville set codeCommune = ?, nom = ?, populationTotale = ?, id_departement = ?, id_region = ? " +
                         "where  codeCommune = ? and nom = ? and populationTotale = ? and id_departement = ? and id_region = ?");
                 preparedStatement.setInt(1,nouveauCodeCommune);
@@ -239,9 +251,7 @@ public class VilleDao {
                     if (preparedStatement != null) {
                         preparedStatement.close();
                     }
-                    /*if (connection != null) {
-                        connection.close();
-                    }*/
+
                 } catch (SQLException e) {
                     System.err.println("Problème de fermeture des ressources :" + e.getMessage());
                 }
@@ -253,14 +263,17 @@ public class VilleDao {
         return nbLignes;
     }
 
+    /**
+     * Supprimme la ville de la BDD
+     * @param ville La ville
+     * @param connection La connexion
+     * @return nombre de lignés supprimées
+     */
     public boolean delete(Ville ville, Connection connection){
-        //Connection connection = null;
+
         PreparedStatement preparedStatement = null;
         int nbLignes = 0;
         try {
-           //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
             int id = ville.getId();
             preparedStatement = connection.prepareStatement("delete from ville where id = ?");
             preparedStatement.setInt(1,id);
@@ -273,9 +286,6 @@ public class VilleDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
@@ -283,16 +293,22 @@ public class VilleDao {
         return nbLignes == 0 ? false : true;
     }
 
+    /**
+     * Verifie la présence de la ville à partir de paramètres ci-dessous
+     * @param codeCommune Le code de la commune
+     * @param nom Le nom de la commune
+     * @param populationTotale La population totale de la commune
+     * @param idDepartement L'identifiant du département
+     * @param idRegion L'identifiant de la région
+     * @param connection La connexion
+     * @return Booléen présence ville
+     */
     public boolean verifVillePresent(int codeCommune, String nom, int populationTotale, int idDepartement, int idRegion, Connection connection){
-        //Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         boolean verif = false;
-        //Connexion BDD
+
         try{
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
 
             preparedStatement = connection.prepareStatement("select * from ville where codeCommune = ? and nom = ? and populationTotale = ? and id_departement = ? and id_region = ?");
             preparedStatement.setInt(1,codeCommune);
@@ -311,9 +327,6 @@ public class VilleDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
@@ -321,22 +334,22 @@ public class VilleDao {
         return false;
     }
 
+    /**
+     * Verifie la présence de la ville à partir de l'objet ville
+     * @param ville La ville
+     * @param connection La connexion
+     * @return Booléen présence ville
+     */
     public boolean verifVillePresent(Ville ville, Connection connection){
-        //Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
         boolean verif = false;
-        //Connexion BDD
         try{
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
-
             preparedStatement = connection.prepareStatement("select * from ville where id = ?");
             preparedStatement.setInt(1,ville.getId());
 
             resultSet = preparedStatement.executeQuery();
-            verif = resultSet.next()==false ? false : true;
+            return resultSet.next();
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -348,14 +361,11 @@ public class VilleDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
         }
-        return verif;
+        return false;
     }
 
 }

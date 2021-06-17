@@ -18,31 +18,36 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Classe exécutable permettant intégration du fichier recensement.csv dans la BDD
+ * @author juruf_000
+ */
 public class IntegrationRecensement {
     public static void main(String[] args) {
 
-
+        //On recupère le chemin du fichier
         Path path = Paths.get("C:\\Users\\juruf_000\\Documents\\Formation Java\\13 - JDBC\\TP\\recensement population.csv");
-        System.out.println(path);
 
         try {
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);// On lie toules les lignes du fichier
             Iterator<String> iterator = lines.iterator();
-            System.out.println(iterator.next()); // Pour lire la première ligne
+            System.out.println(iterator.next()); // Pour lire la première ligne et enlever l'entête
             RegionDao regionDao = new RegionDao();
             DepartementDao departementDao = new DepartementDao();
             VilleDao villeDao = new VilleDao();
-            //Connexion BDD
+
             Connection connection = null;
             try {
+                //Connexion BDD
                 DriverManager.registerDriver(new Driver());
                 Database db = ConfigDatabase.extractConfig();
                 connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
-                /*while (iterator.hasNext()) {
+
+                //Integration Fichier recensement.csv
+               while (iterator.hasNext()) {
                     String line = iterator.next();
                     String[] tabLine = line.split(";");
                     String codeRegion = tabLine[0];
@@ -52,7 +57,6 @@ public class IntegrationRecensement {
                     String nomCommune = tabLine[6];
                     System.out.println(codeDepartement + " / " + codeCommune);
                     int  populationCommune = Integer.parseInt(tabLine[9].replaceAll(" ", ""));
-                    //System.out.println( codeRegion + "  " + nomRegion + "  " + codeDepartement + "  " + codeCommune + "  " + nomCommune + "  " + populationCommune);
                     Region region = new Region(0, codeRegion, nomRegion);
                     //regionDao.insert(codeRegion, nomRegion);
                     Region regionBase = regionDao.extraireParNom(nomRegion, connection);
@@ -72,14 +76,15 @@ public class IntegrationRecensement {
                     Ville ville = new Ville(0, codeCommune, nomCommune, populationCommune, departement, region);
                     villeDao.insert(codeCommune, nomCommune, populationCommune, departement.getId(), regionBase.getId(), connection);
 
+                }
+
+                //drop de la BDD
+                /*List<Region> regions = regionDao.extraire(connection);
+
+                for (Region region : regions) {
+                    regionDao.delete(region, connection);
                 }*/
 
-                Region corse = regionDao.extraireParId(59, connection);
-                regionDao.delete(corse, connection);
-                /*List<Ville> villesCorses2A = villeDao.extraireParIdDepartement(161, connection);
-                for (Ville ville : villesCorses2A) {
-                    System.out.println(ville);
-                }*/
             } catch (SQLException throwables) {
                 throwables.printStackTrace();
             }finally {

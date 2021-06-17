@@ -47,7 +47,7 @@ public class Departement {
 
     /**
      * setteur code département
-     * @param code
+     * @param code Le code
      */
     public void setCode(String code) {
         this.code = code;
@@ -63,7 +63,7 @@ public class Departement {
 
     /**
      * setteur region au département
-     * @param region
+     * @param region La région
      */
     public void setRegion(Region region) {
         this.region = region;

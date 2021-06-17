@@ -11,9 +11,9 @@ public class Database {
 
     /**
      * Constructeur
-     * @param url
-     * @param user
-     * @param pwd
+     * @param url L'url de connexion à la BDD
+     * @param user L'utilisateur de la BDD
+     * @param pwd Le mot de passe de l'utilisateur de la BDD
      */
     public Database(String url, String user, String pwd) {
         this.url = url;

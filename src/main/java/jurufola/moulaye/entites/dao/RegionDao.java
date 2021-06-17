@@ -13,9 +13,9 @@ import java.util.List;
  */
 public class RegionDao {
     /**
-     * Extrait toules region de la BDD
-     * @param connection
-     * @return List<{@link Region}> une liste de régions
+     * Extrait toules régions de la BDD
+     * @param connection LA connexion
+     * @return Liste de régions une liste de régions
      */
     public List<Region> extraire(Connection connection){
 
@@ -36,7 +36,8 @@ public class RegionDao {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        // Fermetures ressoursses
+        // Fermeture ressources
+        finally {
             try {
                 if (resultSet != null) {
                     resultSet.close();
@@ -47,19 +48,20 @@ public class RegionDao {
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
+        }
+
 
         return regions;
     }
 
     /**
      * Insert une region dans la BDD à partir de l'objet Region
-     * @param region
-     * @param connection
+     * @param region La région
+     * @param connection La connexion
      */
     public void insert(Region region, Connection connection) {
-        //Connection connection = null;
+        //Init objet PreparedStatement
         PreparedStatement preparedStatement = null;
-        //Connexion BDD
         try{
             int id = region.getId();
             String code = region.getCode();
@@ -70,20 +72,20 @@ public class RegionDao {
             preparedStatement.setString(3,nom);
             try {
                 int nblignes = preparedStatement.executeUpdate();
-            }catch (SQLIntegrityConstraintViolationException e){ //// colonnes code et nom ont des contrainte d'unicité au niveau de la table
+            }catch (SQLIntegrityConstraintViolationException e){ //// colonnes code et nom ont des contraintes d'unicité au niveau de la table. Une exception sera donc levée si insere un doublon
                 System.out.println("Doublon interdit car la region " + nom + " existe déjà");
             }
 
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        }finally {
+        }
+        //Fermeture ressources
+        finally {
             try{
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
+
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
@@ -93,12 +95,12 @@ public class RegionDao {
 
     /**
      * Insert une région dans la BDD à partir du code et du nom de la région
-     * @param code
-     * @param nom
-     * @param connection
+     * @param code Le code de la région
+     * @param nom Le nom de la région
+     * @param connection La connexion
      */
     public void insert(String code, String nom, Connection connection) {
-        //Iniitalisation objet PreparedStatement
+        //Initialisation objet PreparedStatement
         PreparedStatement preparedStatement = null;
         try{
             preparedStatement = connection.prepareStatement("insert into region(code, nom) values(?, ?)");
@@ -124,15 +126,21 @@ public class RegionDao {
 
     }
 
+    /**
+     * Permet de modifier une région  à partir des attributs ci-dessous
+     * @param ancienCode L'ancien code de la région
+     * @param ancienNom  L'ancien nom de la région
+     * @param nouveauCode Le nouveau code de la région
+     * @param nouveauNom Le nouveau nom de la région
+     * @param connection La  connexion
+     * @return le nombre de ligne modifiées
+     */
     public int update(String ancienCode, String ancienNom, String nouveauCode, String nouveauNom, Connection connection){
-       // Connection connection = null;
+       // Initialisation objet PreparedStatement
         PreparedStatement preparedStatement = null;
         int nbLignes = 0;
-        //Connexion BDD
+
         try{
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
             preparedStatement = connection.prepareStatement("update region set code = ? , nom = ? where code = ? And nom = ?");
             preparedStatement.setString(1, nouveauCode);
             preparedStatement.setString(2,nouveauNom);
@@ -140,7 +148,7 @@ public class RegionDao {
             preparedStatement.setString(4,ancienNom);
             try {
                  nbLignes = preparedStatement.executeUpdate();
-            }catch (SQLIntegrityConstraintViolationException e){
+            }catch (SQLIntegrityConstraintViolationException e){// colonnes code et nom ont des contraintes d'unicité au niveau de la table. Une exception sera donc levée si insere un doublon
                 System.out.println("Doublon interdit car la region " + nouveauNom + " existe déjà");
             }
 
@@ -151,9 +159,6 @@ public class RegionDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-                /*if (connection != null) {
-                    connection.close();
-                }*/
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
@@ -161,6 +166,12 @@ public class RegionDao {
         return nbLignes;
     }
 
+    /**
+     * Supprime un region de la base.
+     * @param region La région
+     * @param connection La connexion
+     * @return un booleéen si sur une ligne a été modifiée ou pas
+     */
     public boolean delete(Region region, Connection connection) {
         //Supprimer d'abord tous les départements liés
         DepartementDao departementDao = new DepartementDao();
@@ -193,21 +204,23 @@ public class RegionDao {
         return nbLignes == 0 ? false : true;
     }
 
+    /**
+     * Permet de recuper une region de la BDD à partir de son identifiant
+     * @param idRegion L'identifiant de la région
+     * @param connection La connexion
+     * @return Region demandée.
+     */
     public Region extraireParId(int idRegion, Connection connection) {
-        // Connection bdd
-        //Connection connection = null;
+        //Initialisation objets ResultSet et PreparedStatement
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Region region = null;
         try {
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
             preparedStatement = connection.prepareStatement("select * from region where id = ?");
             preparedStatement.setInt(1, idRegion);
             resultSet = preparedStatement.executeQuery();
 
-
+            // Parcours Objet ResultSet afin de constituer la région
             while(resultSet.next()){
 
                 String codeRegion = resultSet.getString("code");
@@ -216,37 +229,37 @@ public class RegionDao {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        }try {
+        }try {// Fermeture ressources
             if (resultSet != null) {
                 resultSet.close();
             }
             if (preparedStatement != null) {
                 preparedStatement.close();
             }
-            /*if (connection != null) {
-                connection.close();
-            }*/
+
         } catch (SQLException e) {
             System.err.println("Problème de fermeture des ressources :" + e.getMessage());
         }
         return region;
     }
 
+    /**
+     * Permet de recuperer une région à partir de son nom
+     * @param nomRegion Le nom de la région
+     * @param connection La connexion
+     * @return La région demandée
+     */
     public Region extraireParNom(String nomRegion, Connection connection) {
-        // Connection bdd
-        //Connection connection = null;
+        //Initialisation objets ResultSet et PreparedStatement
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;
         Region region = null;
         try {
-            //DriverManager.registerDriver(new Driver());
-            //Database db = ConfigDatabase.extractConfig();
-            //connection = DriverManager.getConnection(db.getUrl(), db.getUser(), db.getPwd());
             preparedStatement = connection.prepareStatement("select * from region where nom = ?");
             preparedStatement.setString(1, nomRegion);
             resultSet = preparedStatement.executeQuery();
 
-
+            // Parcours Objet ResultSet afin de constituer la région
             while(resultSet.next()){
                 int idRegion = resultSet.getInt("id");
                 String codeRegion = resultSet.getString("code");
@@ -255,7 +268,7 @@ public class RegionDao {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        }finally {
+        }finally {//Fermeture ressources
             try {
                 if (resultSet != null) {
                     resultSet.close();
@@ -263,9 +276,6 @@ public class RegionDao {
                 if (preparedStatement != null) {
                     preparedStatement.close();
                 }
-            /*if (connection != null) {
-                connection.close();
-            }*/
             } catch (SQLException e) {
                 System.err.println("Problème de fermeture des ressources :" + e.getMessage());
             }
